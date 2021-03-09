@@ -1,0 +1,98 @@
+class Memory {
+
+  static int heapbase, memorylength, nextaddress;
+  // field int heapbase, memorylength, nextaddress;
+
+  function void init() {
+    var Array memory;
+    let heapbase = 2048;
+    let memorylength = 0;
+    let nextaddress = heapbase;
+    let memory[heapbase] = 0;
+    return;
+  }
+
+  function int peek(int address) {
+    var Array memory;
+    var int x;
+    let x = memory[address];
+    return x;
+  }
+
+  function void poke(int address, int value) {
+    var Array memory;
+    let memory[address] = value;
+    return;
+  }
+
+  // memory[0]:前のオブジェクトのメモリ長さ memory[1]:メモリ長さ memory[2]:次のアドレス memory[3~]:
+  function Array alloc(int size) {
+    var int i, address, check, memorylengthsub, memorystack, memorylength;
+    var Array memory;
+    //次のアドレスが16383を超えているときメモリを整理(デフラグ)
+    if(nextaddress > 16383) {
+      let memorylengthsub = 0;
+      let address = heapbase + 2;
+      while(memory[address - 1] = 0 | address - 3 > 16383) {
+        //次のアドレス - 現在のアドレス　= メモリ長さかをチェック
+        let check = memory[address] - address;
+        if(check > memory[address - 1]) {
+          let memorystack = memory[address];
+          let memorylengthsub = memorylengthsub + memory[address] - check;
+          let memory[address] = memory[address] - memorylengthsub;
+          //メモリ移動
+          let i = 0;
+          let memorylength = memory[memorystack - 1];
+          while(i < memorylength + 3) {
+            let memory[memory[address] - 1 + i - memorylengthsub] = memory[memory[address] - 1 + i];
+            let i = i + 1;
+          }
+        }
+        let address = memory[address];
+      }
+      let nextaddress = address;
+      //do Sys.error(1);
+    }
+    //メモリ確保
+    let memory[nextaddress + 1] = size;
+    let memory[nextaddress + 2] = nextaddress + size + 3;
+    let memory[nextaddress + size + 3] = size;
+    let nextaddress = memory[nextaddress + 2];
+    //オブジェクト領域の最初から
+    return nextaddress - size;
+  }
+
+  function void deAlloc(Array o) {
+    //メモリのつながりを書き換える
+    var int i, conectionaddress, beforenextaddress, beforesize, size;
+    var Array memory;
+    let conectionaddress = o[-1];
+    let size = o[-2];
+    //前のメモリの長さが0 or ベースアドレスがオブジェクトのアドレスと仮定して一つ前の次のアドレス部分が0のとき
+    //前のメモリの長さが0:アドレスが2048
+    //一つ前の次のアドレス部分が0(memory[o - o[-3] - 3] = 0):いらない？
+    if(o[-3] = 0) {
+      let beforesize = 0;
+      let beforenextaddress = heapbase;
+    }
+    else {
+      let beforesize = o[-3];
+      let beforenextaddress = conectionaddress - size - 3 - beforesize - 1;
+    }
+    if(beforenextaddress > heapbase) {
+    //左辺上のネクストアドレス格納場所
+      let memory[beforenextaddress] = conectionaddress;
+      let memory[beforenextaddress - 1] = o[-3] + size + 3;
+      //let o[-3] = o[-3] + size + 3;
+    }
+    let o[-2] = 0;
+    let o[-1] = 0;
+    let i = 0;
+    while(i < size) {
+      let o[i] = 0;
+      let i = i + 1;
+    }
+    //let o[i] = 0;
+    return;
+  }
+}
